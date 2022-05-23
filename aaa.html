@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="750" height="500" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas>
+
+<script>
+
+var c=document.getElementById("myCanvas");
+var context=c.getContext("2d");
+context.beginPath();
+context.fillStyle = "orange";
+var point = {x: 30, y:200};
+var width = 400;
+var height = 200;
+var radius = 5;
+var txt = "Hello World";
+
+context.moveTo(point.x, point.y);
+context.lineTo(point.x+height/4, point.y - height/4-1);
+context.arc(point.x+ height/4+ radius, point.y - height/2,radius,-Math.PI, -Math.PI / 2,false);
+context.arc(point.x+ height/4 +width, point.y - height/2, radius, -Math.PI / 2, 0,false);
+context.arc(point.x+ height/4 +width, point.y + height/2, radius, 0, Math.PI / 2, false);
+context.arc(point.x+ height/4+ radius, point.y + height/2, radius, Math.PI / 2, Math.PI, false);
+context.lineTo(point.x+height/4, point.y + height/4-1);
+context.lineTo(point.x, point.y);
+context.stroke();
+context.fill();
+context.closePath();
+context.font="30px Arial";
+context.fillStyle = "#fff";
+context.fillText(txt,point.x + (width+ height/2)/2 - context.measureText(txt).width/2,point.y + 15);
+
+// var c=document.getElementById("myCanvas");
+// var context=c.getContext("2d");
+// context.beginPath();
+// context.fillStyle = "orange";
+// var point = {x: 30, y:200};
+// var width = 400;
+// var height = 200;
+// var txt = "Hello World";
+
+// context.moveTo(point.x, point.y);
+// context.lineTo(point.x+height/2, point.y - height/2);
+// context.lineTo(point.x+ width+ height/2, point.y - height/2);
+// context.lineTo(point.x+ width+ height/2, point.y + height/2);
+// context.lineTo(point.x+height/2, point.y + height/2);
+// context.lineTo(point.x, point.y);
+
+// context.stroke();
+// context.fill();
+// context.closePath();
+
+// context.font="30px Arial";
+// context.fillStyle = "#fff";
+// context.fillText(txt,point.x + (width+ height)/2 - context.measureText(txt).width/2,point.y + 15);
+
+</script> 
+
+</body>
+</html>
