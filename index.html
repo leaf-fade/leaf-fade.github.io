@@ -1,23 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./assets/favicon.63a26457.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-    <script >
-      window.location.href="http://yuanshen.io"
-    </script>
-    <script type="module" crossorigin src="./assets/index.7c04b60d.js"></script>
-    <link rel="modulepreload" href="./assets/vendor.fa916dff.js">
-    <link rel="stylesheet" href="./assets/index.80b0345e.css">
-    <script type="module">!function(){try{new Function("m","return import(m)")}catch(o){console.warn("vite: loading legacy build because dynamic import is unsupported, syntax error above should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}}();</script>
-  </head>
-  <body>
-    <div id="root"></div>
-    
-    <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
-    <script nomodule id="vite-legacy-polyfill" src="./assets/polyfills-legacy.b7d84749.js"></script>
-    <script nomodule id="vite-legacy-entry" data-src="./assets/index-legacy.874dbef3.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
-  </body>
-</html>
+<script src="themes/default/js/vendors/mui.js"></script>
+<script src="themes/default/js/common/constant.js"></script>
+<script src="themes/default/js/common/control.js"></script>
+<script>
+	mui.plusReady(function()
+	{
+		console.log(APPAPI.projectName());
+		// 设置状态栏主题颜色 
+		plus.navigator.setStatusBarBackground('#dc1717');
+		
+		// 是否拥有语言
+		var language_value = plus.storage.getItem('language');
+		if (!language_value)
+		{
+			var language = mui.openWindow
+			({
+				url: 'themes/'+APPAPI.projectName()+'/html/start/language.html',
+				id: 'language.html',
+				show:
+				{
+					duration: 300
+				}
+			});
+		}
+		else
+		{	
+			//有语言将国际化文件保存到本地储存
+			var language_value = plus.storage.getItem('language');
+
+			// mui.getJSON
+			// (
+			// 	'themes/' + 'gzzhumin'+ '/language/'+ language_value +'.json',
+			// 	'',
+			// 	function(data)
+			// 	{
+			// 语言包获取
+			postJSON('OTHER_LANGUAGES',{
+				'code':language_value,
+				'module':'app',
+				'action':'index',
+				'type':'self' 
+			},function(data){
+				console.log('language_value:' + JSON.stringify(data));
+				// plus.storage.setItem('languageObj',JSON.stringify(data));
+				plus.storage.setItem('languageObj',JSON.stringify(data.list))
+			});
+			// 预加载基础页面 
+			var view =
+			[
+				{
+					url: 'public/footer.html',
+					id: 'footer.html',
+					style: 
+					{
+						bottom: '0',
+						height: "52px"
+					}
+				},
+				{ 
+					url: 'home/home.html', 
+					id: 'home.html'
+				},
+				{
+					url: 'shopping/shopping_street.html',
+					id: 'shopping_street.html'
+				},
+				{
+					url: 'transport/transport.html',
+					id: 'transport.html'
+				},
+				{
+					url: 'shopping/shopping_cart.html',
+					id: 'shopping_cart.html'
+				},
+				{
+					url: 'user/user.html',
+					id: 'user.html'
+				}
+			];
+			
+			mui.each(view, function()
+			{
+				addPage(this.url, this.id, this.style);
+			});
+			//配置初始化
+			getJSON(
+				'OTHER_CONFIGLIST',
+				{},function(data){
+					var api = data.api.split(',');
+					plus.storage.setItem('api',api);
+					plus.storage.setItem('key',data.key);
+					plus.storage.setItem('changePrice', data.changePrice);
+					plus.storage.setItem('changeFreight', data.changeFreight);
+					plus.storage.setItem('orderCheck', data.orderCheck);
+					plus.storage.setItem('testIp',data.testIp);
+					if(compareVersion(data.version.name,plus.runtime.version)){
+						mui.confirm(language.version_msg_01+data.version.name+language.version_msg_02,language.version_title,[language.No_update,language.update_now],function(flag){
+							if (flag.index == 1)
+							{
+								openWebUrl("market://details?id="+plus.runtime.appid);
+							}
+						});
+					}
+				}
+			);
+			//获取汇率
+			postJSON('OTHER_RATE',{},function(data){
+				console.log(JSON.stringify(data.list));
+				plus.storage.setItem('currency_rate',JSON.stringify(data.list));
+			});
+			if(!plus.storage.getItem('anonymous')){
+				//获取匿名登录信息
+				mui.getJSON(
+					APPAPI.getConstant('OTHER_ANONYMOUS'),
+					{},function(data){
+						if(data.status=='success'){
+							plus.storage.setItem('anonymous',data.result.anonymous);
+						}
+					}
+				);
+			}
+			
+			function addPage(href, id, style)
+			{
+				if (!style)
+				{
+					var style = 
+					{
+						top: "0",
+						bottom: "52px",
+						scrollIndicator: "none"
+					};
+				}
+				var index = plus.webview.getLaunchWebview();
+				var sub = plus.webview.create
+				(
+					'themes/'+APPAPI.projectName()+'/html/' + href,
+					id,
+					style
+				);
+				index.append(sub);
+				href == 'home/home.html' || href == 'public/footer.html' ? null : sub.hide();  //默认显示
+			}
+		}
+		//淘口令
+		taobaoCommand(getClipText());
+	});
+	/**
+	 * 淘口令
+	 */
+	function taobaoCommand(password)
+	{
+		if(password == null ||password=='')return;
+		var api = 'PASSWORD_TAOBAO';
+		var is1688 = /.1688./.test(password);
+		//判断是否为1688淘口令
+		if(is1688) api = "PASSWORD_ALIBABA";
+		//获取淘口令商品ID
+		mui.getJSON
+		(
+			APPAPI.getConstant(api),
+			{
+				'word': password
+			},function(data)
+			{
+//				console.log(picUrl(data.item.pic_url));
+				var goodsId = data.item.num_iid;
+				
+				if(goodsId&&goodsId!='')
+				{
+					mui.openWindow
+					({
+						url: 'themes/'+APPAPI.projectName()+'/html/public/tbPassword.html',
+						id: 'tbPassword.html',
+						styles:
+						{
+							background: 'transparent'
+						},
+						show:
+						{
+							aniShow: 'none'
+						},
+						extras:
+						{
+				      		'goodsId': goodsId,
+				      		'is1688':is1688,
+				      		'imgSrc': picUrl(data.item.pic_url),
+				      		'title': data.item.title,
+				      		'price': data.item.price
+					    }
+					});
+				}
+			}
+		);
+	}
+	
+	//监听程序从后台切换到前台
+	document.addEventListener('resume', function(){
+		taobaoCommand(getClipText());
+	},false);
+	
+	document.addEventListener('plusready',function(){
+	    checkArguments();
+	},false);
+	// 判断启动方式
+	function checkArguments(){
+	    console.log("plus.runtime.launcher: "+plus.runtime.launcher);
+	    var args= plus.runtime.arguments;
+	    if(args&&args.split('#')[1]){
+//	        alert(JSON.stringify(args));
+//			setClipText(JSON.stringify(args));
+	        var token = getQueryString(args.split('#')[1].trim(),'access_token');
+//	       	var token =  "EAACVZBpaXRcEBABjBEDTKQH1yPW7zPjnsCBa4Nyxg9RabqeRgayOPUDuCesx7szzRAGveYpCNsabXrIaZAgNeOcGslaY1LF44qyMqTsgXqVxDS56UgyqkfWq9hwj8mnr6OthtJxu6QtEsMSNK5NIi3kJUTIS1ZBwciEltgvU6f3JeRZCzirZAB7vOanVdUTfxn1aqe7psaI4L1ZCSnbvK0rX8cJrMAZBLPtFRDLLPqRqwZDZD";
+//	        alert(token);
+			if(plus.storage.getItem('userId')) return;
+	       	mui.getJSON("https://graph.facebook.com/me",{'access_token':token},function(data){
+	       		console.log(JSON.stringify(data));
+	       		var options = {};
+				options.openid = data.id; 
+				options.userName = data.name;
+				options.sync_type = "fb";
+	       		mui.openWindow
+				({
+					url: 'themes/'+APPAPI.projectName()+'/html/user/sync_register_login.html',
+					id: "sync_register_login.html",
+					show:
+					{
+						duration: 300
+					},
+					extras:{
+						'options':options
+				    }
+				});
+	       	});
+	    }
+	}
+	// 处理从后台恢复
+	document.addEventListener('newintent',function(){
+	    console.log("addEventListener: newintent");
+	    checkArguments();
+	},false);
+	
+</script>
